@@ -20,6 +20,7 @@ class _Home extends State<Home> {
   }
 
   List _listaTarefas = [];
+  TextEditingController _controllerTarefa = TextEditingController();
 
   Future<File> _getFile() async {
     final diretorio = await getApplicationDocumentsDirectory();
@@ -27,15 +28,20 @@ class _Home extends State<Home> {
     return arquivo;
   }
 
-  // ignore: unused_element
+  _salvarTarefa() {
+    String novoProduto = _controllerTarefa.text;
+    Map<String, dynamic> tarefa = Map();
+    tarefa['titulo'] = novoProduto;
+    tarefa['realizada'] = false;
+    setState(() {
+      _listaTarefas.add(tarefa);
+    });
+    _salvarArquivo();
+    _controllerTarefa.text = "";
+  }
+
   _salvarArquivo() async {
     var arquivo = await this._getFile();
-
-    Map<String, dynamic> tarefa = Map();
-    tarefa['titulo'] = "Ir ao mercado";
-    tarefa['realizada'] = false;
-    _listaTarefas.add(tarefa);
-
     String dados = json.encode(_listaTarefas);
     arquivo.writeAsStringSync(dados);
   }
@@ -56,6 +62,7 @@ class _Home extends State<Home> {
         return AlertDialog(
           title: Text('Adicionar produto'),
           content: TextField(
+            controller: _controllerTarefa,
             decoration: InputDecoration(labelText: "Inserir nome do produto"),
             onChanged: (text) {},
           ),
@@ -71,6 +78,7 @@ class _Home extends State<Home> {
             // ignore: deprecated_member_use
             FlatButton(
               onPressed: () {
+                _salvarTarefa();
                 Navigator.pop(context);
               },
               child: Text("Adicionar"),
@@ -95,8 +103,16 @@ class _Home extends State<Home> {
             child: ListView.builder(
               itemCount: _listaTarefas.length,
               itemBuilder: (context, index) {
-                return ListTile(
-                  title: Text(''),
+                return CheckboxListTile(
+                  activeColor: Colors.purple,
+                  title: Text(_listaTarefas[index]['titulo']),
+                  value: _listaTarefas[index]['realizada'],
+                  onChanged: (valor) {
+                    setState(() {
+                      _listaTarefas[index]['realizada'] = valor;
+                    });
+                    _salvarArquivo();
+                  },
                 );
               },
             ),
@@ -110,7 +126,7 @@ class _Home extends State<Home> {
         icon: Icon(Icons.add_shopping_cart),
         label: Text('Adicionar'),
         elevation: 2,
-        onPressed: _salvarArquivo,
+        onPressed: modalAdicionar,
       ),
       bottomNavigationBar: BottomAppBar(
         child: Row(
