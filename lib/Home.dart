@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:path_provider/path_provider.dart';
+import 'dart:io';
+import 'dart:convert';
 
 class Home extends StatefulWidget {
   @override
@@ -6,7 +9,45 @@ class Home extends StatefulWidget {
 }
 
 class _Home extends State<Home> {
-  List _listaTarefas = ['Arroz', 'Feijao', 'Macarrão'];
+  @override
+  void initState() {
+    super.initState();
+    _lerArquivo().then((dados) {
+      setState(() {
+        _listaTarefas = json.decode(dados);
+      });
+    });
+  }
+
+  List _listaTarefas = [];
+
+  Future<File> _getFile() async {
+    final diretorio = await getApplicationDocumentsDirectory();
+    var arquivo = File("${diretorio.path}/dados.json");
+    return arquivo;
+  }
+
+  // ignore: unused_element
+  _salvarArquivo() async {
+    var arquivo = await this._getFile();
+
+    Map<String, dynamic> tarefa = Map();
+    tarefa['titulo'] = "Ir ao mercado";
+    tarefa['realizada'] = false;
+    _listaTarefas.add(tarefa);
+
+    String dados = json.encode(_listaTarefas);
+    arquivo.writeAsStringSync(dados);
+  }
+
+  _lerArquivo() async {
+    try {
+      var arquivo = await this._getFile();
+      return arquivo.readAsString();
+    } catch (e) {
+      return null;
+    }
+  }
 
   void modalAdicionar() {
     showDialog(
@@ -55,7 +96,7 @@ class _Home extends State<Home> {
               itemCount: _listaTarefas.length,
               itemBuilder: (context, index) {
                 return ListTile(
-                  title: Text(_listaTarefas[index]),
+                  title: Text(''),
                 );
               },
             ),
@@ -69,7 +110,7 @@ class _Home extends State<Home> {
         icon: Icon(Icons.add_shopping_cart),
         label: Text('Adicionar'),
         elevation: 2,
-        onPressed: modalAdicionar,
+        onPressed: _salvarArquivo,
       ),
       bottomNavigationBar: BottomAppBar(
         child: Row(
