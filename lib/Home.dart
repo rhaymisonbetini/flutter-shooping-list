@@ -20,6 +20,7 @@ class _Home extends State<Home> {
   }
 
   List _listaTarefas = [];
+  Map<String, dynamic> _ultimoJogoAtualizado = Map();
   TextEditingController _controllerTarefa = TextEditingController();
 
   Future<File> _getFile() async {
@@ -56,12 +57,32 @@ class _Home extends State<Home> {
   }
 
   void _verifyDirectionAndExecute(DismissDirection diretion, index) {
+    _ultimoJogoAtualizado = _listaTarefas[index];
     if (diretion == DismissDirection.endToStart) {
       setState(() {
         _listaTarefas.removeAt(index);
       });
       _salvarArquivo();
+      this.callSnackBar(index);
     }
+  }
+
+  callSnackBar(index) {
+    final SnackBar snackBar = SnackBar(
+      content: Text('Você desistiu deste jogo'),
+      backgroundColor: Colors.blueGrey,
+      action: SnackBarAction(
+        label: "Desfazer",
+        textColor: Colors.white,
+        onPressed: () {
+          setState(() {
+            _listaTarefas.insert(index, _ultimoJogoAtualizado);
+          });
+          _salvarArquivo();
+        },
+      ),
+    );
+    ScaffoldMessenger.of(context).showSnackBar(snackBar);
   }
 
   void modalAdicionar() {
@@ -103,69 +124,58 @@ class _Home extends State<Home> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.purple,
-        title: Text('The Game History'),
+        backgroundColor: Colors.blueGrey,
+        title: Text('Playstation Story'),
       ),
       body: Column(
         children: [
           Expanded(
             child: ListView.builder(
               itemCount: _listaTarefas.length,
-              // ignore: missing_return
               itemBuilder: (context, index) {
-                if (_listaTarefas.length > 0) {
-                  return Dismissible(
-                    background: Container(
-                      color: Colors.greenAccent,
-                      padding: EdgeInsets.all(16),
-                      child: Row(
-                        children: [
-                          Icon(
-                            Icons.check,
-                            color: Colors.white,
-                          ),
-                        ],
-                      ),
+                return Dismissible(
+                  background: Container(
+                    color: Colors.greenAccent,
+                    padding: EdgeInsets.all(16),
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.check,
+                          color: Colors.white,
+                        ),
+                      ],
                     ),
-                    secondaryBackground: Container(
-                      color: Colors.red,
-                      padding: EdgeInsets.all(16),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                          Icon(
-                            Icons.delete,
-                            color: Colors.white,
-                          ),
-                        ],
-                      ),
+                  ),
+                  secondaryBackground: Container(
+                    color: Colors.red,
+                    padding: EdgeInsets.all(16),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        Icon(
+                          Icons.delete,
+                          color: Colors.white,
+                        ),
+                      ],
                     ),
-                    direction: DismissDirection.horizontal,
-                    key: Key(index.toString()),
-                    child: CheckboxListTile(
-                      activeColor: Colors.purple,
-                      title: Text(_listaTarefas[index]['titulo']),
-                      value: _listaTarefas[index]['realizada'],
-                      onChanged: (valor) {
-                        setState(() {
-                          _listaTarefas[index]['realizada'] = valor;
-                        });
-                        _salvarArquivo();
-                      },
-                    ),
-                    onDismissed: (direction) {
-                      this._verifyDirectionAndExecute(direction, index);
+                  ),
+                  direction: DismissDirection.horizontal,
+                  key: Key(DateTime.now().microsecondsSinceEpoch.toString()),
+                  child: CheckboxListTile(
+                    activeColor: Colors.purple,
+                    title: Text(_listaTarefas[index]['titulo']),
+                    value: _listaTarefas[index]['realizada'],
+                    onChanged: (valor) {
+                      setState(() {
+                        _listaTarefas[index]['realizada'] = valor;
+                      });
+                      _salvarArquivo();
                     },
-                  );
-                } else {
-                  return Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Text('Você não está jogando nenhum jogo no momento'),
-                    ],
-                  );
-                }
+                  ),
+                  onDismissed: (direction) {
+                    this._verifyDirectionAndExecute(direction, index);
+                  },
+                );
               },
             ),
           )
@@ -173,7 +183,7 @@ class _Home extends State<Home> {
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       floatingActionButton: FloatingActionButton(
-        backgroundColor: Colors.purple,
+        backgroundColor: Colors.blueGrey,
         foregroundColor: Colors.white,
         child: Icon(Icons.add),
         elevation: 2,
@@ -186,7 +196,7 @@ class _Home extends State<Home> {
             IconButton(
               icon: Icon(
                 Icons.gamepad,
-                color: Colors.purple,
+                color: Colors.blueGrey,
               ),
               onPressed: () {},
             ),
