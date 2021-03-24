@@ -55,7 +55,14 @@ class _Home extends State<Home> {
     }
   }
 
-  void _verifyDirectionAndExecute(DismissDirection diretion) {}
+  void _verifyDirectionAndExecute(DismissDirection diretion, index) {
+    if (diretion == DismissDirection.endToStart) {
+      setState(() {
+        _listaTarefas.removeAt(index);
+      });
+      _salvarArquivo();
+    }
+  }
 
   void modalAdicionar() {
     showDialog(
@@ -97,57 +104,68 @@ class _Home extends State<Home> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.purple,
-        title: Text('Cadastre sua lista de compras'),
+        title: Text('The Game History'),
       ),
       body: Column(
         children: [
           Expanded(
             child: ListView.builder(
               itemCount: _listaTarefas.length,
+              // ignore: missing_return
               itemBuilder: (context, index) {
-                return Dismissible(
-                  background: Container(
-                    color: Colors.greenAccent,
-                    padding: EdgeInsets.all(16),
-                    child: Row(
-                      children: [
-                        Icon(
-                          Icons.check,
-                          color: Colors.white,
-                        ),
-                      ],
+                if (_listaTarefas.length > 0) {
+                  return Dismissible(
+                    background: Container(
+                      color: Colors.greenAccent,
+                      padding: EdgeInsets.all(16),
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.check,
+                            color: Colors.white,
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                  secondaryBackground: Container(
-                    color: Colors.red,
-                    padding: EdgeInsets.all(16),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        Icon(
-                          Icons.delete,
-                          color: Colors.white,
-                        ),
-                      ],
+                    secondaryBackground: Container(
+                      color: Colors.red,
+                      padding: EdgeInsets.all(16),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          Icon(
+                            Icons.delete,
+                            color: Colors.white,
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                  direction: DismissDirection.horizontal,
-                  key: Key(index.toString()),
-                  child: CheckboxListTile(
-                    activeColor: Colors.purple,
-                    title: Text(_listaTarefas[index]['titulo']),
-                    value: _listaTarefas[index]['realizada'],
-                    onChanged: (valor) {
-                      setState(() {
-                        _listaTarefas[index]['realizada'] = valor;
-                      });
-                      _salvarArquivo();
+                    direction: DismissDirection.horizontal,
+                    key: Key(index.toString()),
+                    child: CheckboxListTile(
+                      activeColor: Colors.purple,
+                      title: Text(_listaTarefas[index]['titulo']),
+                      value: _listaTarefas[index]['realizada'],
+                      onChanged: (valor) {
+                        setState(() {
+                          _listaTarefas[index]['realizada'] = valor;
+                        });
+                        _salvarArquivo();
+                      },
+                    ),
+                    onDismissed: (direction) {
+                      this._verifyDirectionAndExecute(direction, index);
                     },
-                  ),
-                  onDismissed: (direction) {
-                    this._verifyDirectionAndExecute(direction);
-                  },
-                );
+                  );
+                } else {
+                  return Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Text('Você não está jogando nenhum jogo no momento'),
+                    ],
+                  );
+                }
               },
             ),
           )
