@@ -55,6 +55,8 @@ class _Home extends State<Home> {
     }
   }
 
+  void _verifyDirectionAndExecute(DismissDirection diretion) {}
+
   void modalAdicionar() {
     showDialog(
       context: context,
@@ -103,15 +105,47 @@ class _Home extends State<Home> {
             child: ListView.builder(
               itemCount: _listaTarefas.length,
               itemBuilder: (context, index) {
-                return CheckboxListTile(
-                  activeColor: Colors.purple,
-                  title: Text(_listaTarefas[index]['titulo']),
-                  value: _listaTarefas[index]['realizada'],
-                  onChanged: (valor) {
-                    setState(() {
-                      _listaTarefas[index]['realizada'] = valor;
-                    });
-                    _salvarArquivo();
+                return Dismissible(
+                  background: Container(
+                    color: Colors.greenAccent,
+                    padding: EdgeInsets.all(16),
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.check,
+                          color: Colors.white,
+                        ),
+                      ],
+                    ),
+                  ),
+                  secondaryBackground: Container(
+                    color: Colors.red,
+                    padding: EdgeInsets.all(16),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        Icon(
+                          Icons.delete,
+                          color: Colors.white,
+                        ),
+                      ],
+                    ),
+                  ),
+                  direction: DismissDirection.horizontal,
+                  key: Key(index.toString()),
+                  child: CheckboxListTile(
+                    activeColor: Colors.purple,
+                    title: Text(_listaTarefas[index]['titulo']),
+                    value: _listaTarefas[index]['realizada'],
+                    onChanged: (valor) {
+                      setState(() {
+                        _listaTarefas[index]['realizada'] = valor;
+                      });
+                      _salvarArquivo();
+                    },
+                  ),
+                  onDismissed: (direction) {
+                    this._verifyDirectionAndExecute(direction);
                   },
                 );
               },
@@ -120,20 +154,20 @@ class _Home extends State<Home> {
         ],
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-      floatingActionButton: FloatingActionButton.extended(
+      floatingActionButton: FloatingActionButton(
         backgroundColor: Colors.purple,
         foregroundColor: Colors.white,
-        icon: Icon(Icons.add_shopping_cart),
-        label: Text('Adicionar'),
+        child: Icon(Icons.add),
         elevation: 2,
         onPressed: modalAdicionar,
       ),
       bottomNavigationBar: BottomAppBar(
+        shape: CircularNotchedRectangle(),
         child: Row(
           children: [
             IconButton(
               icon: Icon(
-                Icons.exit_to_app,
+                Icons.gamepad,
                 color: Colors.purple,
               ),
               onPressed: () {},
